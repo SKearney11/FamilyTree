@@ -75,6 +75,7 @@ public class Driver {
 		System.out.println("Main Menu");
 		System.out.println("Press 1 to look up parents");
 		System.out.println("Press 2 to look up all ancestors");
+		System.out.println("Press 3 to look up all siblings");
 		System.out.println("Press 0 to exit");
 		int choice = scan.nextInt();
 		mainMenu(choice);
@@ -105,7 +106,11 @@ public class Driver {
 				printMenu();
 			break;
 			case 3:
-				System.out.println("Press 3 to look up siblings");
+				System.out.println("Enter the name you want to look up");
+				scan.nextLine();
+				name = scan.nextLine();
+				System.out.println("Siblings = " +siblingLookup(name));
+				printMenu();
 			}
 		System.out.println("Bye");
 		System.exit(0);
@@ -124,6 +129,31 @@ public class Driver {
 		return result;	
 	}
 	
+	public String siblingLookup(String name){
+		String siblings = " ";
+		Person p1;
+		Person p2;
+		for(int i = 0; i < people.size(); i++)
+		{
+			if(people.get(i).getName().equals(name))
+			{
+				System.out.println("person found");
+				p1 = people.get(i).getP_Parent1();
+				p2 = people.get(i).getP_Parent2();
+				
+				for(int k = 0; k < people.size(); k++)
+				{
+					if(people.get(k).getP_Parent1().getName().equals(p1.getName()) && people.get(k).getP_Parent2().getName().equals(p2.getName()))
+					{
+						siblings += (people.get(k).getName() + " ");
+					}
+				}
+				return siblings;
+			}
+		}
+		
+		return ("No known siblings");
+	}		
 	
 	public Person findPerson(String name){
 		for(int i = 0; i < people.size(); i++){
