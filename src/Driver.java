@@ -1,13 +1,14 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Driver {
 	public String name;
 	public String result = "";
 	Scanner scan = new Scanner(System.in);
-	public ArrayList<Person> people = new ArrayList();
+	HashMap<String, Person> people = new HashMap<String, Person>();
 	
 	public static void main(String[] args) 
 	{
@@ -24,6 +25,7 @@ public class Driver {
 		}
 		System.out.println("File read successfully");
 		assignParents();
+		addChildren();
 		printMenu();
 	}
 	
@@ -41,33 +43,27 @@ public class Driver {
 			int birthYear =  Integer.parseInt(personTokens[2]);
 			String parent1 = personTokens[3];
 			String parent2 = personTokens[4];
-			people.add(new Person(name, gender, birthYear, parent1, parent2, null, null));
+			people.put(name, new Person(name, gender, birthYear, parent1, parent2, null, null));
+		}
+	}
+
+	private void addChildren(){
+		for(Person person : people.values()){
+			if(person.p_Parent1!=null){
+				if(!person.p_Parent1.children.contains(person))
+					person.p_Parent1.children.add(person);
+			}
+			if(person.p_Parent2!=null){
+				if(!person.p_Parent2.children.contains(person))
+					person.p_Parent2.children.add(person);
+			}
 		}
 	}
 	
 	public void assignParents(){
-		for(int i = 0; i < people.size(); i++)
-		{
-			for(int k = 0; k < people.size(); k++)
-			{
-				if(people.get(i).parent1.equals(people.get(k).name))
-				{
-					people.get(i).setP_Parent1(people.get(k));
-				}
-				
-				if(people.get(i).parent2.equals(people.get(k).getName()))
-				{
-					people.get(i).p_Parent2 = people.get(k);
-				}
-				
-				//Dealing with unknown parents. These will live outside of the array
-				if(people.get(i).parent1.equals("?")){
-					people.get(i).setP_Parent1(new Person("Unknown", '?', 0000, "Unknown", "Unknown", null, null));
-				}
-				if(people.get(i).parent2.equals("?")){
-					people.get(i).setP_Parent2(new Person("Unknown", '?', 0000, "Unknown", "Unknown", null, null));
-				}
-			}
+		for(Person person : people.values()){
+			person.p_Parent1 = people.get(person.parent1);
+			person.p_Parent2 = people.get(person.parent2);
 		}
 	}
 	
@@ -95,14 +91,7 @@ public class Driver {
 				System.out.println("Enter the name you want to look up");
 				scan.nextLine();
 				name = scan.nextLine();
-				Person p = findPerson(name);
-				if(!(p == null))
-				{
-					System.out.println(ancestorLookup(p));
-				}else{
-					System.out.println("Please enter a valid name");
-				}
-					
+				System.out.println(ancestorLookup(people.get(name)));
 				printMenu();
 			break;
 			case 3:
@@ -119,63 +108,44 @@ public class Driver {
 	
 	
 	public String parentLookup(String name){
-		String result = "unknown";
-		for(int i = 0; i < people.size(); i++){
-			if(people.get(i).getName().equals(name)){
-				result = "The parents of " + people.get(i).getName() + " are " + people.get(i).getP_Parent1().getName() + " and " + people.get(i).getP_Parent2().getName();
-				return result;
-			}	
-		}
-		return result;	
+		String result = people.get(name).getParent1() + " and " + people.get(name).getParent2();
+		return result;
 	}
 	
 	public String siblingLookup(String name){
-		String siblings = " ";
-		Person p1;
-		Person p2;
-		for(int i = 0; i < people.size(); i++)
-		{
-			if(people.get(i).getName().equals(name))
-			{
-				System.out.println("person found");
-				p1 = people.get(i).getP_Parent1();
-				p2 = people.get(i).getP_Parent2();
-				
-				for(int k = 0; k < people.size(); k++)
-				{
-					if(people.get(k).getP_Parent1().getName().equals(p1.getName()) && people.get(k).getP_Parent2().getName().equals(p2.getName()))
-					{
-						siblings += (people.get(k).getName() + " ");
-					}
-				}
-				return siblings;
+		ArrayList<String> siblings = new ArrayList<String>();
+		
+		Person father = people.get(name).p_Parent2;
+		Person mother = people.get(name).p_Parent1;
+		
+		if(father != null){
+			for(Person person : father.children){
+				if(person.equals(people.get(name))) continue;
+				if(!siblings.contains(person)) siblings.add(person.name);
 			}
 		}
-		
-		return ("No known siblings");
-	}		
-	
-	public Person findPerson(String name){
-		for(int i = 0; i < people.size(); i++){
-			if(people.get(i).getName().equals(name)){
-				Person result = people.get(i);
-				System.out.println("Found person");
-				return(result);
-			}	
+		if(mother != null){
+			for(Person person : mother.children){
+				if(person.equals(people.get(name))) continue;
+				if(!siblings.contains(person)) siblings.add(person.name);
+			}
 		}
-		System.out.println("Didnt find person");
-		return null;
-	}
+		String siblingString = "";
+		for(String sibling : siblings){
+			siblingString += sibling+"  ";
+		}
+		return siblingString;
+	}	
 
-	public String ancestorLookup(Person person){	
-		
-		if(!person.getParent1().equals("Unknown"))
+	public String ancestorLookup(Person p){
+		if(!(p.parent1.equals("?")))
 		{
-			ancestorLookup(person.getP_Parent1()); 
-			if(!person.getParent2().equals("Unknown"))
+			ancestorLookup(p.getP_Parent1()); 
+			
+			if(!p.parent2.equals("?"))
 			{
-				ancestorLookup(person.getP_Parent2()); 
-				result += ("The parents of " + person.getName() + " are " + person.getP_Parent1().getName() + " and " + person.getP_Parent2().getName() + ". \n");
+				ancestorLookup(p.getP_Parent2()); 
+				result += ("The parents of " + p.getName() + " are " + p.getParent1() + " and " + p.getParent2() + ". \n");
 			}
 		}
 		return result;
