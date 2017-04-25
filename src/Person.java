@@ -20,7 +20,7 @@ public class Person {
 		this.p_Parent1 = p_Parent1;
 		this.p_Parent2 = p_Parent2;
 		children = new ArrayList<Person>(); 
-	} 
+	}
 	
 	public String getName() {
 		return name;
