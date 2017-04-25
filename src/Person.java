@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class Person {
 	String name;
@@ -7,6 +8,7 @@ public class Person {
 	String parent2;
 	Person p_Parent1;
 	Person p_Parent2;
+	ArrayList<Person> children;
 	
 	public Person(String name, char gender, int birthYear, String parent1, String parent2, Person p_Parent1,
 			Person p_Parent2) {
@@ -17,6 +19,7 @@ public class Person {
 		this.parent2 = parent2;
 		this.p_Parent1 = p_Parent1;
 		this.p_Parent2 = p_Parent2;
+		children = new ArrayList<Person>(); 
 	}
 	
 	public String getName() {
